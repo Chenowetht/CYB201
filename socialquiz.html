@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-beta8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Engineering Quiz</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* Quiz Container */
+        .quiz-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* Intro Section */
+        #intro {
+            text-align: center;
+        }
+
+        #studentName {
+            width: 80%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-submit {
+            background-color: #28a745;
+        }
+        .btn-submit:hover {
+            background-color: #218838;
+        }
+        .btn-print {
+            background-color: #dc3545;
+        }
+        .btn-print:hover {
+            background-color: #c82333;
+        }
+
+        /* Question Styling */
+        .question-block {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .question-block h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .question-block ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .question-block li {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .question-block li:hover {
+            background-color: #f9f9f9;
+        }
+
+        .question-block input[type="radio"] {
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        .question-block label {
+            vertical-align: middle;
+            cursor: pointer;
+            display: inline-block;
+            width: 90%;
+        }
+
+        /* Results and Certificate */
+        #results {
+            text-align: center;
+        }
+
+        #certificate {
+            display: none; /* Hidden by default, shown for print */
+            border: 10px double #2c3e50;
+            padding: 50px;
+            background-color: #faffee;
+            max-width: 1000px;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        #certificate h1 {
+            font-size: 48px;
+            color: #d4af37;
+        }
+
+        #certificate h2 {
+            font-size: 32px;
+            color: #2c3e50;
+        }
+
+        #certificate p {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+
+        #certDate {
+            font-size: 18px;
+            color: #555;
+        }
+
+        /* Utility */
+        .hidden {
+            display: none;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background-color: #fff;
+            }
+            .quiz-container {
+                box-shadow: none;
+                border: none;
+                padding: 0;
+                margin: 0;
+            }
+            #intro, #quizForm, #results {
+                display: none;
+            }
+            #certificate {
+                display: block;
+                width: 90%;
+                margin: 0 auto;
+                border: 10px double #2c3e50;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div id="intro">
+            <h1>Social Engineering Quiz</h1>
+            <p>Please enter your full name to begin. This name will be used on your certificate.</p>
+            <input type="text" id="studentName" placeholder="Enter your full name" aria-label="Student Name">
+            <br>
+            <button class="btn" id="startQuizBtn">Start Quiz</button>
+        </div>
+
+        <form id="quizForm" class="hidden"></form>
+
+        <div id="results" class="hidden">
+            <h2>Quiz Complete!</h2>
+            <p id="scoreText">You scored 0 out of 30.</p>
+            <p id="percentageText">Your grade: 0%</p>
+            <button class="btn btn-print" id="printCertBtn">Print Certificate</button>
+        </div>
+    </div>
+
+    <div id="certificate">
+        <h1>Certificate of Completion</h1>
+        <p>This certificate is awarded to</p>
+        <h2 id="certName"></h2>
+        <p>for successfully completing the</p>
+        <h2>Social Engineering Mastery Quiz</h2>
+        <p>with a final grade of</p>
+        <h2 id="certGrade"></h2>
+        <p id="certDate"></p>
+    </div>
+
+    <script>
+        // --- 1. QUIZ DATA ---
+        // Contains all questions, options, and the correct answer index (0-based)
+        const quizData = [
+            { question: "An attacker compromises a popular cybersecurity blog to infect its readers with malware. This is a classic example of:", options: ["Whaling", "Water-holing", "Baiting", "Pretexting"], answer: 1 },
+            { question: "Which of Cialdini's principles of influence is being used when an attacker says, \"I'm calling from the CEO's office, and he needs this done immediately\"?", options: ["Scarcity", "Liking", "Authority", "Social Proof"], answer: 2 },
+            { question: "An attacker calls an employee pretending to be from IT support, offering help for a \"known network issue.\" The employee, who *was* having slow speeds, then initiates contact. This is an example of:", options: ["Quid Pro Quo", "Reverse Social Engineering", "Tailgating", "Vishing"], answer: 1 },
+            { question: "What is the primary difference between **pretexting** and **impersonation**?", options: ["Pretexting is always done online, while impersonation is in person.", "Impersonation is simply *claiming* to be someone, while pretexting involves *creating a full, believable narrative* and scenario.", "Pretexting targets C-level executives, while impersonation targets anyone.", "There is no significant difference."], answer: 1 },
+            { question: "Leaving a malware-infected USB drive labeled \"Confidential Salary Info 2025\" in a company lobby is a form of:", options: ["Baiting", "Quid Pro Quo", "Smishing", "Elicitation"], answer: 0 },
+            { question: "An attacker sends an email stating, \"Your account will be suspended in 24 hours unless you click this link to verify.\" This primarily relies on which principle?", options: ["Reciprocity", "Urgency (a form of Scarcity)", "Liking", "Consensus"], answer: 1 },
+            { question: "What is the key technical difference between **phishing** and **pharming**?", options: ["Phishing uses email; pharming uses SMS.", "Phishing uses a deceptive link; pharming poisons DNS or a host file to redirect a *legitimate* URL.", "Phishing targets individuals; pharming targets large groups.", "Pharming is a type of vishing."], answer: 1 },
+            { question: "An attacker builds rapport with a target by researching their social media and discussing shared (but fabricated) interests. This leverages the principle of:", options: ["Authority", "Liking", "Scarcity", "Reciprocity"], answer: 1 },
+            { question: "\"Vishing\" is social engineering conducted over which medium?", options: ["Email", "SMS (Text Message)", "Voice (Phone calls, VoIP)", "In Person"], answer: 2 },
+            { question: "A social engineer reviews a company's discarded documents, finding employee names, phone lists, and system information. This is:", options: ["Dumpster Diving", "Shoulder Surfing", "Elicitation", "Pretexting"], answer: 0 },
+            { question: "What is **Whaling** in the context of social engineering?", options: ["A large-scale, non-targeted phishing attack.", "An attack that uses a \"large\" or unbelievable story.", "Spear phishing that specifically targets high-profile executives (C-Suite).", "An attack that \"harpoons\" a specific server."], answer: 2 },
+            { question: "An attacker offers a \"free security audit\" to a small business in exchange for system access. This is a form of:", options: ["Baiting", "Tailgating", "Quid Pro Quo", "Whaling"], answer: 2 },
+            { question: "Following an authorized employee through a secure entry point without swiping a badge is called:", options: ["Piggybacking", "Shoulder Surfing", "Tailgating", "Elicitation"], answer: 2 },
+            { question: "The \"Social-Engineer Toolkit\" (SET) is a well-known tool often found in which security-focused OS?", options: ["Windows Server", "Red Hat Enterprise Linux", "Kali Linux", "Ubuntu Desktop"], answer: 2 },
+            { question: "What is the primary goal of the \"Elicitation\" phase of a social engineering attack?", options: ["To gain physical access to a building.", "To subtly extract information from a target without them realizing it.", "To install malware on a user's device.", "To build initial rapport with the target."], answer: 1 },
+            { question: "An SMS message that says, \"A problem with your package delivery. Click here to update your address: [link]\" is an example of:", options: ["Vishing", "Smishing", "Pharming", "Whaling"], answer: 1 },
+            { question: "An attacker tells a help desk employee, \"I know you're not *supposed* to do this, but my boss will fire me if I can't log in. Can you just reset my password?\" This manipulates:", options: ["Guilt and Authority", "Liking and Social Proof", "Scarcity and Reciprocity", "Empathy and Urgency"], answer: 3 },
+            { question: "What is the subtle difference between **Tailgating** and **Piggybacking**?", options: ["Tailgating is electronic; piggybacking is physical.", "Tailgating is *without* the authorized person's knowledge; piggybacking is *with* their knowing (but mistaken) consent (e.g., holding the door).", "Piggybacking is without consent; tailgating is with consent.", "They are identical terms."], answer: 1 },
+            { question: "An attacker joins a company's \"New Hires\" group on LinkedIn and starts adding employees as connections to appear more legitimate. This leverages:", options: ["Social Proof", "Authority", "Scarcity", "Baiting"], answer: 0 },
+            { question: "Which of these is the *best* human-level defense against a well-crafted pretexting attack?", options: ["Using a strong, unique password.", "Having an up-to-date antivirus program.", "Verifying the requestor's identity through a *separate, known* communication channel.", "Never clicking links in emails."], answer: 2 },
+            { question: "A social engineer, posing as a job candidate, calls HR to \"confirm her interview details\" with the goal of mapping the company's internal phone directory and naming conventions. This technique is:", options: ["Quid Pro Quo", "Pretexting", "Baiting", "Water-holing"], answer: 1 },
+            { question: "An attacker sends a gift to a target, then follows up with a request for a \"small favor\" a week later. This leverages the principle of:", options: ["Liking", "Reciprocity", "Authority", "Social Proof"], answer: 1 },
+            { question: "Which phase of the social engineering attack lifecycle involves researching the target using OSINT (Open-Source Intelligence)?", options: ["Information Gathering", "Developing Rapport", "Exploitation", "Elicitation"], answer: 0 },
+            { question: "\"Shoulder Surfing\" can be mitigated *most* effectively by:", options: ["Strong encryption", "Privacy filters for screens", "Two-factor authentication", "Complex password policies"], answer: 1 },
+            { question: "An attacker calls a user and says, \"All your colleagues in the marketing department have already installed this mandatory security patch by clicking the link I sent. You're the last one.\" This primarily uses:", options: ["Scarcity", "Social Proof (Consensus)", "Authority", "Liking"], answer: 1 },
+            { question: "What is **SPIM**?", options: ["A new type of phishing attack.", "Unsolicited, malicious messages sent over Instant Messaging (IM).", "A social engineering \"framework.\"", "Socially-driven Pharming and Impersonation."], answer: 1 },
+            { question: "A key goal of a \"Business Email Compromise\" (BEC) attack is often:", options: ["To steal a user's personal passwords for social media.", "To install ransomware on the entire network.", "To trick an employee into performing a wire transfer to the attacker's account.", "To deface the company website."], answer: 2 },
+            { question: "Which of these is a *cognitive bias* often exploited by social engineers?", options: ["DMARC (Domain-based Message Authentication)", "Authority Bias (Tendency to obey authority figures).", "SHA-256 (Secure Hash Algorithm)", "AES (Advanced Encryption Standard)"], answer: 1 },
+            { question: "An attacker creates a fake login portal for a popular web service that looks identical to the real one, then drives traffic to it. This is a:", options: ["Credential Harvesting Attack", "Watering Hole Attack", "Quid Pro Quo Attack", "Reverse Social Engineering Attack"], answer: 0 },
+            { question: "In the \"Social Engineering Attack Framework,\" what is the *final* step after a successful exploitation?", options: ["Elicitation", "Information Gathering", "Post-Exploitation (Covering tracks, disengaging)", "Pretexting"], answer: 2 }
+        ];
+
+        // --- 2. GLOBAL VARIABLES ---
+        let currentStudentName = "";
+        const introSection = document.getElementById('intro');
+        const quizForm = document.getElementById('quizForm');
+        const resultsSection = document.getElementById('results');
+        const startQuizBtn = document.getElementById('startQuizBtn');
+        const nameInput = document.getElementById('studentName');
+        const printCertBtn = document.getElementById('printCertBtn');
+
+        // --- 3. CORE FUNCTIONS ---
+
+        /**
+         * Starts the quiz: validates name, hides intro, shows quiz
+         */
+        function startQuiz() {
+            currentStudentName = nameInput.value.trim();
+            if (currentStudentName === "") {
+                alert("Please enter your name to start the quiz.");
+                return;
+            }
+            
+            introSection.classList.add('hidden');
+            buildQuiz();
+            quizForm.classList.remove('hidden');
+        }
+
+        /**
+         * Generates the quiz HTML from the quizData array
+         */
+        function buildQuiz() {
+            let output = [];
+
+            quizData.forEach((currentQuestion, questionIndex) => {
+                let optionsOutput = [];
+                currentQuestion.options.forEach((option, optionIndex) => {
+                    optionsOutput.push(
+                        `<li>
+                            <input type="radio" name="question${questionIndex}" id="q${questionIndex}o${optionIndex}" value="${optionIndex}">
+                            <label for="q${questionIndex}o${optionIndex}">${option}</label>
+                        </li>`
+                    );
+                });
+
+                output.push(
+                    `<div class="question-block" role="group" aria-labelledby="q${questionIndex}_label">
+                        <h3 id="q${questionIndex}_label">${questionIndex + 1}. ${currentQuestion.question}</h3>
+                        <ul class="options-list">${optionsOutput.join('')}</ul>
+                    </div>`
+                );
+            });
+
+            // Add a submit button at the end
+            output.push(`<button type="submit" class="btn btn-submit">Submit Quiz</button>`);
+            quizForm.innerHTML = output.join('');
+        }
+
+        /**
+         * Calculates the score and displays the results
+         */
+        function submitQuiz(event) {
+            event.preventDefault(); // Stop the form from submitting traditionally
+
+            let score = 0;
+            const formData = new FormData(quizForm);
+
+            quizData.forEach((currentQuestion, questionIndex) => {
+                const selectedAnswer = formData.get(`question${questionIndex}`);
+                // Check if the selected answer (which is a string) is equal to the correct answer number
+                if (selectedAnswer !== null && parseInt(selectedAnswer) === currentQuestion.answer) {
+                    score++;
+                }
+            });
+
+            const totalQuestions = quizData.length;
+            const percentage = ((score / totalQuestions) * 100).toFixed(0);
+
+            // Hide quiz, show results
+            quizForm.classList.add('hidden');
+            resultsSection.classList.remove('hidden');
+
+            // Display score
+            document.getElementById('scoreText').innerText = `You scored ${score} out of ${totalQuestions}.`;
+            document.getElementById('percentageText').innerText = `Your grade: ${percentage}%`;
+
+            // Populate certificate (for printing)
+            populateCertificate(percentage);
+        }
+
+        /**
+         * Fills in the hidden certificate with the student's data
+         */
+        function populateCertificate(grade) {
+            const today = new Date();
+            const dateString = today.toLocaleDateString('en-US', {
+                year: 'numeric', month: 'long', day: 'numeric'
+            });
+
+            document.getElementById('certName').innerText = currentStudentName;
+            document.getElementById('certGrade').innerText = `${grade}%`;
+            document.getElementById('certDate').innerText = `Awarded on ${dateString}`;
+        }
+
+        /**
+         * Triggers the browser's print dialog
+         */
+        function printCertificate() {
+            window.print();
+        }
+
+        // --- 4. EVENT LISTENERS ---
+        startQuizBtn.addEventListener('click', startQuiz);
+        quizForm.addEventListener('submit', submitQuiz);
+        printCertBtn.addEventListener('click', printCertificate);
+
+    </script>
+</body>
+</html>
