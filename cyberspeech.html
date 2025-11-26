@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberSpeech: Security+ Communication Workshop</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        
+        /* Custom Chart Container Styles as per requirements */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .tab-active {
+            border-bottom: 2px solid #2563eb;
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        .tab-inactive {
+            color: #6b7280;
+            font-weight: 400;
+        }
+        
+        .tab-inactive:hover {
+            color: #374151;
+        }
+
+        /* Card Hover Effects */
+        .interactive-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .interactive-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+    
+    <!-- Chosen Palette: Corporate Blue & Warm Slate -->
+    <!-- Application Structure Plan: 
+         1. Header: Context and Session Goal.
+         2. Navigation: Tabs for Logistics (Plan), Simulation (Action), and Reference (Data).
+         3. Logistics Tab: Visualizes the 2-hour agenda and maps 3 instructors to Toastmasters roles.
+         4. Simulation Tab: The primary tool for the class. Contains the 'Student Picker', 'Topic/Audience Randomizer' and specific evaluation criteria.
+         5. Reference Tab: Static data on Security+ Domain 1 and Persona Guides.
+    -->
+</head>
+<body class="text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="text-3xl">🛡️</span>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-900">CyberSpeech Instructor Dashboard</h1>
+                    <p class="text-xs text-slate-500">Security+ Domain 1 • Communication Workshop</p>
+                </div>
+            </div>
+            <div class="text-right hidden sm:block">
+                <p class="text-sm font-semibold text-slate-600">Duration: 2 Hours</p>
+                <p class="text-xs text-slate-400">Instructors Required: 3</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Navigation Tabs -->
+        <div class="flex border-b border-slate-200 mb-8">
+            <button onclick="switchTab('logistics')" id="tab-logistics" class="tab-active py-4 px-6 focus:outline-none">
+                Logistics & Roles
+            </button>
+            <button onclick="switchTab('simulation')" id="tab-simulation" class="tab-inactive py-4 px-6 focus:outline-none">
+                Simulation Engine
+            </button>
+            <button onclick="switchTab('reference')" id="tab-reference" class="tab-inactive py-4 px-6 focus:outline-none">
+                Topic & Persona Guide
+            </button>
+        </div>
+
+        <!-- TAB 1: LOGISTICS & ROLES -->
+        <div id="content-logistics" class="block">
+            
+            <!-- Intro Text -->
+            <div class="mb-8 max-w-4xl">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Workshop Logistics</h2>
+                <p class="text-slate-600">
+                    This dashboard helps you orchestrate a 2-hour "Toastmasters-style" session. 
+                    The goal is to bridge the gap between <strong>Technical Knowledge</strong> (CompTIA Security+ Domain 1) and <strong>Adaptive Communication</strong>. 
+                    Below is the time allocation and role division for 3 instructors.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <!-- Chart: Agenda Timeline -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                    <h3 class="text-lg font-semibold mb-4 text-slate-700">🕑 The 2-Hour Agenda</h3>
+                    <div class="chart-container">
+                        <canvas id="agendaChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-sm text-slate-500">
+                        <ul class="space-y-2">
+                            <li><strong class="text-blue-600">00-15:</strong> Intro & The "Why" (Importance of translation).</li>
+                            <li><strong class="text-blue-600">15-55:</strong> Prepared Speeches (Students explain complex concepts).</li>
+                            <li><strong class="text-blue-600">55-65:</strong> Break.</li>
+                            <li><strong class="text-blue-600">65-105:</strong> "Table Topics" (Rapid fire scenarios).</li>
+                            <li><strong class="text-blue-600">105-120:</strong> Feedback & Closing.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Roles Section -->
+                <div class="space-y-6">
+                    <!-- Instructor Roles -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <h3 class="text-lg font-semibold mb-4 text-slate-700">👥 Instructor Role Division (3 People)</h3>
+                        <p class="text-sm text-slate-500 mb-4">To simulate a full Toastmasters meeting with only 3 leaders, divide duties as follows:</p>
+                        
+                        <div class="space-y-3">
+                            <div class="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                                <h4 class="font-bold text-blue-800">Instructor 1: The Toastmaster (MC)</h4>
+                                <p class="text-sm text-blue-600 mt-1">Runs the agenda, introduces speakers, keeps energy high. Acts as the "Table Topics Master" during the second half.</p>
+                            </div>
+                            
+                            <div class="p-3 bg-indigo-50 rounded-lg border border-indigo-100">
+                                <h4 class="font-bold text-indigo-800">Instructor 2: The Technical Evaluator</h4>
+                                <p class="text-sm text-indigo-600 mt-1">Focuses solely on technical accuracy (Security+ Domain 1). Did they explain "Phishing" correctly? Did they confuse "Virus" and "Worm"?</p>
+                            </div>
+
+                            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                                <h4 class="font-bold text-slate-800">Instructor 3: Timer & Grammarian</h4>
+                                <p class="text-sm text-slate-600 mt-1">Tracks time limits (crucial for exams/meetings). Notes "Ahs", "Ums", and jargon overuse. Tracks successful metaphors.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Meeting Layout -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <h3 class="text-lg font-semibold mb-2 text-slate-700">Meeting Flow Principles</h3>
+                        <ul class="list-disc list-inside text-sm text-slate-600 space-y-2">
+                            <li><strong>The Stage:</strong> Ensure there is a designated "speaking area" (front of room).</li>
+                            <li><strong>Applause:</strong> Mandatory before and after every speaker. Builds confidence.</li>
+                            <li><strong>The Handshake:</strong> The Toastmaster must shake hands (or elbow bump) with the speaker to "transfer control" of the stage.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: SIMULATION ENGINE -->
+        <div id="content-simulation" class="hidden">
+            
+            <!-- Intro -->
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">The Simulation Engine</h2>
+                <p class="text-slate-600 max-w-3xl">
+                    Use this tool for the <strong>Table Topics</strong> portion (Minutes 65-105). 
+                    Students must speak for 1-2 minutes on the generated scenario.
+                    <br><span class="text-xs text-orange-600 font-bold uppercase tracking-wider">Instruction:</span> Call a student to the stage <em>before</em> generating the topic to simulate high-pressure response.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- The Generator (Left Side) -->
+                <div class="lg:col-span-7 space-y-6">
+                    
+                    <!-- NEW: Student Selector -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Class Size</label>
+                                <input type="number" id="student-count" value="20" min="1" class="w-24 border border-slate-300 rounded px-3 py-2 text-slate-700 font-bold focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                            </div>
+                            <div class="h-10 w-px bg-slate-200 hidden sm:block"></div>
+                            <button onclick="pickStudent()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-3 px-6 rounded-full shadow-md transition-all active:scale-95 flex items-center">
+                                <span class="mr-2">👤</span> Pick Student
+                            </button>
+                        </div>
+
+                        <div class="text-right flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-lg border border-slate-100">
+                            <div class="text-xs text-slate-400 uppercase font-bold">Selected<br>Student</div>
+                            <div id="student-result" class="text-4xl font-extrabold text-indigo-600 min-w-[3rem] text-center">--</div>
+                        </div>
+                    </div>
+
+                    <!-- Scenario Generator -->
+                    <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-blue-600 text-center">
+                        <div class="mb-6">
+                            <span class="text-sm font-bold text-slate-400 uppercase tracking-widest">Scenario Generator</span>
+                        </div>
+                        
+                        <!-- Dynamic Output Area -->
+                        <div id="scenario-output" class="py-8 min-h-[200px] flex flex-col justify-center items-center transition-all duration-300">
+                            <h3 class="text-4xl font-extrabold text-slate-800 mb-2">Ready?</h3>
+                            <p class="text-slate-500">Click generate to assign a topic.</p>
+                        </div>
+
+                        <!-- Controls -->
+                        <div class="flex justify-center gap-4 mt-6">
+                            <button onclick="generateScenario()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform active:scale-95 transition-all flex items-center">
+                                <span class="mr-2">🎲</span> Generate Scenario
+                            </button>
+                            <button onclick="resetTimer()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 px-6 rounded-full shadow-sm">
+                                Reset Timer
+                            </button>
+                        </div>
+
+                        <!-- Live Timer -->
+                        <div class="mt-8 pt-6 border-t border-slate-100">
+                            <div class="text-xs text-slate-400 uppercase mb-1">Speaker Timer</div>
+                            <div id="timer-display" class="text-5xl font-mono font-bold text-slate-300">00:00</div>
+                            <div class="flex justify-center gap-2 mt-2">
+                                <div id="indicator-green" class="w-4 h-4 rounded-full bg-slate-200 transition-colors"></div>
+                                <div id="indicator-yellow" class="w-4 h-4 rounded-full bg-slate-200 transition-colors"></div>
+                                <div id="indicator-red" class="w-4 h-4 rounded-full bg-slate-200 transition-colors"></div>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-2">Green: 1:00 | Yellow: 1:30 | Red: 2:00</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats & rubric (Right Side) -->
+                <div class="lg:col-span-5 space-y-6">
+                    
+                    <!-- Domain Coverage Chart -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <h3 class="text-sm font-bold text-slate-500 uppercase mb-4">Session Topic Coverage</h3>
+                        <div class="chart-container" style="height: 200px;">
+                            <canvas id="coverageChart"></canvas>
+                        </div>
+                        <p class="text-xs text-slate-400 text-center mt-2">Tracks topics assigned during Table Topics to ensure balance.</p>
+                    </div>
+
+                    <!-- Evaluation Rubric -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <h3 class="text-lg font-bold text-slate-700 mb-3">Quick Evaluator Checklist</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="flex items-center justify-between text-sm font-medium text-slate-700">
+                                    Technical Accuracy (Domain 1)
+                                    <span class="text-xs bg-slate-100 px-2 py-1 rounded">Instructor 2</span>
+                                </label>
+                                <div class="text-xs text-slate-500 mt-1">Did they use correct terminology (e.g., Vishing vs Phishing)?</div>
+                            </div>
+                            <hr class="border-slate-100">
+                            <div>
+                                <label class="flex items-center justify-between text-sm font-medium text-slate-700">
+                                    Audience Tuning
+                                    <span class="text-xs bg-slate-100 px-2 py-1 rounded">All</span>
+                                </label>
+                                <div class="text-xs text-slate-500 mt-1">Did they adjust vocabulary? (No jargon for kids, ROI for CEOs).</div>
+                            </div>
+                            <hr class="border-slate-100">
+                            <div>
+                                <label class="flex items-center justify-between text-sm font-medium text-slate-700">
+                                    Fillers & Crutch Words
+                                    <span class="text-xs bg-slate-100 px-2 py-1 rounded">Instructor 3</span>
+                                </label>
+                                <div class="text-xs text-slate-500 mt-1">Count of "Um", "Ah", "Like", "You Know".</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: REFERENCE & PERSONAS -->
+        <div id="content-reference" class="hidden">
+            
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">Reference Material</h2>
+                <p class="text-slate-600">
+                    Use these guides to help students understand the persona they are speaking to, or to clarify Domain 1 concepts.
+                </p>
+            </div>
+
+            <!-- Audience Personas -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                
+                <!-- Child Persona -->
+                <div class="interactive-card bg-white p-6 rounded-xl border-l-4 border-yellow-400 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="font-bold text-lg">The Child (Age 5-10)</h3>
+                        <span class="text-2xl">🧸</span>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4"><strong>Context:</strong> Explain Like I'm 5 (ELI5).</p>
+                    <ul class="text-sm text-slate-500 list-disc list-inside space-y-1">
+                        <li><strong>Do:</strong> Use metaphors (Castle, Guard Dog, Secret Code).</li>
+                        <li><strong>Don't:</strong> Use acronyms (DDoS, APT) or scary concepts.</li>
+                        <li><strong>Goal:</strong> Safety basics (Don't talk to strangers).</li>
+                    </ul>
+                </div>
+
+                <!-- CEO Persona -->
+                <div class="interactive-card bg-white p-6 rounded-xl border-l-4 border-purple-600 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="font-bold text-lg">The Executive (CEO/CFO)</h3>
+                        <span class="text-2xl">💼</span>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4"><strong>Context:</strong> Business Review / Elevator Pitch.</p>
+                    <ul class="text-sm text-slate-500 list-disc list-inside space-y-1">
+                        <li><strong>Do:</strong> Focus on Risk, Reputation, Money, Liability.</li>
+                        <li><strong>Don't:</strong> Explain the technical 'how' of the exploit.</li>
+                        <li><strong>Goal:</strong> Secure budget or approval.</li>
+                    </ul>
+                </div>
+
+                <!-- Technical Persona -->
+                <div class="interactive-card bg-white p-6 rounded-xl border-l-4 border-green-500 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="font-bold text-lg">The SysAdmin / Peer</h3>
+                        <span class="text-2xl">🖥️</span>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4"><strong>Context:</strong> Incident Response / Handover.</p>
+                    <ul class="text-sm text-slate-500 list-disc list-inside space-y-1">
+                        <li><strong>Do:</strong> Be precise. Use ports, protocols, IoCs.</li>
+                        <li><strong>Don't:</strong> Oversimplify. It insults their intelligence.</li>
+                        <li><strong>Goal:</strong> Quick, actionable technical data.</li>
+                    </ul>
+                </div>
+
+                <!-- Elderly Persona -->
+                <div class="interactive-card bg-white p-6 rounded-xl border-l-4 border-pink-400 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="font-bold text-lg">The Grandparent</h3>
+                        <span class="text-2xl">👓</span>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4"><strong>Context:</strong> Helping with computer issues.</p>
+                    <ul class="text-sm text-slate-500 list-disc list-inside space-y-1">
+                        <li><strong>Do:</strong> Focus on trust, relatable analogies (Mailman).</li>
+                        <li><strong>Don't:</strong> Rush or use "Tech Bro" slang.</li>
+                        <li><strong>Goal:</strong> Prevent scams/panic.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Domain 1 Cheat Sheet -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+                    <h3 class="font-bold text-slate-800">CompTIA Security+ Domain 1.0 Topic Bank</h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-sm">
+                        <div>
+                            <h4 class="font-bold text-blue-600 mb-2">1.1 Social Engineering</h4>
+                            <ul class="list-disc list-inside text-slate-600 space-y-1">
+                                <li>Phishing (Spear, Whale, Vishing, Smishing)</li>
+                                <li>Pretexting / Impersonation</li>
+                                <li>Dumpster Diving / Shoulder Surfing</li>
+                                <li>Watering Hole Attack</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-blue-600 mb-2">1.2 Types of Attacks</h4>
+                            <ul class="list-disc list-inside text-slate-600 space-y-1">
+                                <li>Malware (Ransomware, Trojan, Worm, Spyware)</li>
+                                <li>Password Attacks (Brute force, Spraying)</li>
+                                <li>Physical Attacks (Tailgating)</li>
+                                <li>Supply Chain Attacks</li>
+                            </ul>
+                        </div>
+                        <div class="mt-4">
+                            <h4 class="font-bold text-blue-600 mb-2">1.3 Application Attacks</h4>
+                            <ul class="list-disc list-inside text-slate-600 space-y-1">
+                                <li>SQL Injection (Structured Query Language)</li>
+                                <li>Cross-Site Scripting (XSS)</li>
+                                <li>Buffer Overflow</li>
+                                <li>Zero-Day Exploits</li>
+                            </ul>
+                        </div>
+                        <div class="mt-4">
+                            <h4 class="font-bold text-blue-600 mb-2">1.4 Network Attacks</h4>
+                            <ul class="list-disc list-inside text-slate-600 space-y-1">
+                                <li>DoS / DDoS (Denial of Service)</li>
+                                <li>Man-in-the-Middle (On-path)</li>
+                                <li>DNS Poisoning / ARP Poisoning</li>
+                                <li>Wireless (Evil Twin, Deauth)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- DATA & STATE MANAGEMENT ---
+        
+        // Security+ Domain 1 Topics
+        const topics = [
+            { name: "Phishing Email", type: "Social Engineering" },
+            { name: "Ransomware Infection", type: "Malware" },
+            { name: "DDoS Attack", type: "Network" },
+            { name: "SQL Injection", type: "AppSec" },
+            { name: "Shoulder Surfing", type: "Physical" },
+            { name: "Zero-Day Exploit", type: "Vulnerability" },
+            { name: "Man-in-the-Middle", type: "Network" },
+            { name: "Insider Threat", type: "Actors" },
+            { name: "Trojan Horse", type: "Malware" },
+            { name: "Evil Twin Wi-Fi", type: "Wireless" },
+            { name: "Brute Force Attack", type: "Password" }
+        ];
+
+        // Diverse Audiences
+        const audiences = [
+            { name: "A 7-Year-Old Child", icon: "🧸", difficulty: "Creative" },
+            { name: "Non-Technical CEO", icon: "💼", difficulty: "High Stakes" },
+            { name: "Grandmother", icon: "👓", difficulty: "Patience" },
+            { name: "HR Manager", icon: "📋", difficulty: "Policy" },
+            { name: "Senior Network Engineer", icon: "🖥️", difficulty: "Technical" },
+            { name: "A Panic-Stricken User", icon: "😱", difficulty: "Empathy" },
+            { name: "Budget Committee", icon: "💰", difficulty: "Persuasion" }
+        ];
+
+        let timerInterval;
+        let seconds = 0;
+        let coverageData = {
+            "Social Engineering": 0,
+            "Malware": 0,
+            "Network": 0,
+            "AppSec": 0,
+            "Physical": 0,
+            "Other": 0
+        };
+
+        let coverageChartInstance;
+
+        // --- NAVIGATION LOGIC ---
+        function switchTab(tabId) {
+            // Hide all content
+            ['logistics', 'simulation', 'reference'].forEach(id => {
+                document.getElementById(`content-${id}`).classList.add('hidden');
+                document.getElementById(`tab-${id}`).classList.remove('tab-active');
+                document.getElementById(`tab-${id}`).classList.add('tab-inactive');
+            });
+
+            // Show selected
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabId}`).classList.add('tab-active');
+            document.getElementById(`tab-${tabId}`).classList.remove('tab-inactive');
+        }
+
+        // --- STUDENT PICKER LOGIC ---
+        function pickStudent() {
+            const countInput = document.getElementById('student-count');
+            const resultDisplay = document.getElementById('student-result');
+            
+            const max = parseInt(countInput.value);
+            
+            if (!max || max < 1) {
+                // Simple validation
+                return;
+            }
+
+            // Animation effect
+            let iterations = 0;
+            const maxIterations = 15;
+            
+            const interval = setInterval(() => {
+                const randomVal = Math.floor(Math.random() * max) + 1;
+                resultDisplay.innerText = randomVal;
+                
+                iterations++;
+                if (iterations >= maxIterations) {
+                    clearInterval(interval);
+                    // Final number
+                    const final = Math.floor(Math.random() * max) + 1;
+                    resultDisplay.innerText = final;
+                }
+            }, 60);
+        }
+
+        // --- GENERATOR LOGIC ---
+        function generateScenario() {
+            // 1. Random Selection
+            const topic = topics[Math.floor(Math.random() * topics.length)];
+            const audience = audiences[Math.floor(Math.random() * audiences.length)];
+
+            // 2. Update Output UI
+            const container = document.getElementById('scenario-output');
+            
+            // Animation reset
+            container.style.opacity = '0';
+            
+            setTimeout(() => {
+                container.innerHTML = `
+                    <div class="animate-fade-in-up">
+                        <div class="text-sm text-slate-400 font-semibold mb-1">THE TOPIC</div>
+                        <div class="text-3xl md:text-4xl font-extrabold text-blue-700 mb-4">${topic.name}</div>
+                        
+                        <div class="flex items-center justify-center gap-2 mb-2">
+                            <span class="h-px w-8 bg-slate-300"></span>
+                            <span class="text-xs text-slate-400">EXPLAIN TO</span>
+                            <span class="h-px w-8 bg-slate-300"></span>
+                        </div>
+
+                        <div class="flex flex-col items-center">
+                            <span class="text-5xl mb-2">${audience.icon}</span>
+                            <div class="text-2xl font-bold text-slate-700">${audience.name}</div>
+                            <span class="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded mt-2">Mode: ${audience.difficulty}</span>
+                        </div>
+                    </div>
+                `;
+                container.style.opacity = '1';
+            }, 200);
+
+            // 3. Update Coverage Stats
+            updateCoverageStats(topic.type);
+
+            // 4. Auto-start timer after brief delay (simulating thinking time)
+            resetTimer();
+            setTimeout(startTimer, 1000); // Give them 1 second to read before clock starts
+        }
+
+        // --- TIMER LOGIC ---
+        function startTimer() {
+            clearInterval(timerInterval);
+            seconds = 0;
+            updateTimerDisplay();
+            
+            timerInterval = setInterval(() => {
+                seconds++;
+                updateTimerDisplay();
+                updateTimerIndicators();
+            }, 1000);
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            seconds = 0;
+            updateTimerDisplay();
+            document.getElementById('timer-display').classList.remove('text-slate-800', 'text-green-600', 'text-yellow-600', 'text-red-600');
+            document.getElementById('timer-display').classList.add('text-slate-300');
+            
+            // Reset lights
+            ['green', 'yellow', 'red'].forEach(c => {
+                document.getElementById(`indicator-${c}`).className = `w-4 h-4 rounded-full bg-slate-200 transition-colors`;
+            });
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const secs = (seconds % 60).toString().padStart(2, '0');
+            const display = document.getElementById('timer-display');
+            display.innerText = `${mins}:${secs}`;
+            display.classList.remove('text-slate-300');
+            display.classList.add('text-slate-800');
+        }
+
+        function updateTimerIndicators() {
+            // Toastmasters standard: Green @ 1:00, Yellow @ 1:30, Red @ 2:00
+            if (seconds >= 60) document.getElementById('indicator-green').className = "w-6 h-6 rounded-full bg-green-500 shadow-lg animate-pulse";
+            if (seconds >= 90) document.getElementById('indicator-yellow').className = "w-6 h-6 rounded-full bg-yellow-500 shadow-lg animate-pulse";
+            if (seconds >= 120) document.getElementById('indicator-red').className = "w-6 h-6 rounded-full bg-red-600 shadow-lg animate-pulse";
+        }
+
+        // --- CHART LOGIC ---
+        function updateCoverageStats(type) {
+            // Map specific types to chart categories if necessary
+            let category = type;
+            if (!coverageData.hasOwnProperty(category)) category = "Other";
+            
+            coverageData[category]++;
+            
+            // Update Chart
+            coverageChartInstance.data.datasets[0].data = Object.values(coverageData);
+            coverageChartInstance.update();
+        }
+
+        window.onload = function() {
+            // 1. Initialize Agenda Chart
+            const ctxAgenda = document.getElementById('agendaChart').getContext('2d');
+            new Chart(ctxAgenda, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Intro/Why (15m)', 'Prepared Speeches (40m)', 'Break (10m)', 'Table Topics (40m)', 'Feedback (15m)'],
+                    datasets: [{
+                        data: [15, 40, 10, 40, 15],
+                        backgroundColor: ['#94a3b8', '#3b82f6', '#e2e8f0', '#f59e0b', '#10b981'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+
+            // 2. Initialize Coverage Chart
+            const ctxCoverage = document.getElementById('coverageChart').getContext('2d');
+            coverageChartInstance = new Chart(ctxCoverage, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(coverageData),
+                    datasets: [{
+                        label: 'Topics Covered',
+                        data: Object.values(coverageData),
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        };
+
+    </script>
+    
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- Visualization & Content Choices: 
+         - Agenda: Doughnut chart to visualize the 'Time Budget' of the 2-hour class.
+         - Logic: Simulates Toastmasters roles (Timer/Ah Counter) via JS to reduce instructor workload.
+         - Topics: Filtered strictly to CompTIA Security+ Domain 1 per user request.
+         - Interaction: 'Slot machine' mechanic for Table Topics creates classroom excitement/tension.
+    -->
+</body>
+</html>
